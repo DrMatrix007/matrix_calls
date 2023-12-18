@@ -1,0 +1,6 @@
+services:
+  client:
+    build: matrix_calls_client
+    ports:
+      - 3000:3000
+    container_name: matrix_calls_client
