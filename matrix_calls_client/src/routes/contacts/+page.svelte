@@ -1,20 +1,34 @@
 <script lang="ts">
-  import Socket from "$lib/messages";
+  import ServerSocket from "$lib/messages";
+  import { onMount } from "svelte";
+  import { writable } from "svelte/store";
+
   let contacts = [
     { id: 1, name: "John Doe", email: "john@example.com" },
     { id: 2, name: "Jane Doe", email: "jane@example.com" },
     // Add more contacts as needed
   ];
+
   let selectedContact: any | null = null;
   let messages: any[] = [];
 
   let current_message: string = "";
 
-  function sendCurrentMessage() {
+  let socket_write = writable<ServerSocket | null>(null);
+
+  let socket: ServerSocket | null = null;
+
+  socket_write.subscribe((x) => (socket = x));
+
+  onMount(() => {
+    console.log("creating");
+    socket_write.set(new ServerSocket());
+  });
+
+  function sendMessage() {
     console.log(current_message);
-
-    Socket.sendMessage(current_message);
-
+    current_message = "";
+    socket?.sendMessage("test");
     setTimeout(() => {
       current_message = "";
     });
@@ -49,13 +63,13 @@
           bind:value={current_message}
           on:keydown={(event) => {
             if (event.key == "Enter" && !event.shiftKey) {
-              sendCurrentMessage();
+              sendMessage();
             }
           }}
         />
         <button
           on:click={() => {
-            sendCurrentMessage();
+            sendMessage();
           }}>Send</button
         >
       </div>

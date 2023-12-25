@@ -1,0 +1,12 @@
+[package]
+name = "matrix_calls_server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+future-utils = "0.12.1"
+futures-util = "0.3.30"
+tokio = { version = "1.35.0", features = ["full"] }
+tokio-tungstenite = "*"

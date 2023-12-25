@@ -1,24 +1,31 @@
-import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
+import { writable, type Writable } from 'svelte/store';
 
-const messageStore = writable('');
+class ServerSocket {
+  messageStore: Writable<string>
+  socket: WebSocket
 
-const socket = new WebSocket('wss://localhost:6969');
+  constructor() {
+    this.messageStore = writable('');
+    this.socket = new WebSocket('ws://localhost:6969');
 
-// Connection opened
-socket.addEventListener('open', function(_event) {
-  console.log("It's open");
-});
+    this.socket?.addEventListener('open', (_event) => {
+      console.log("It's open");
+    });
 
-// Listen for messages
-socket.addEventListener('message', function(event) {
-  messageStore.set(event.data);
-});
+    this.socket?.addEventListener('message', (event) => {
+      this.messageStore.set(event.data);
+    });
+  }
+  sendMessage(message: string) {
+    if (this.socket && this.socket.readyState <= 1) {
+      this.socket.send(message);
+    }
+  }
 
-export const sendMessage = (message: string) => {
-  if (socket.readyState <= 1) {
-    socket.send(message);
+  get subscribe() {
+    return this.messageStore.subscribe;
   }
 }
 
-
-export const subscribe = messageStore.subscribe;
+export default ServerSocket;
