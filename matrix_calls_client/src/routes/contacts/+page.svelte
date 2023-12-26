@@ -22,13 +22,14 @@
 
   onMount(() => {
     console.log("creating");
-    socket_write.set(new ServerSocket());
+    let sock = new ServerSocket();
+    socket_write.set(sock);
   });
 
   function sendMessage() {
     console.log(current_message);
+    socket?.sendMessage(current_message);
     current_message = "";
-    socket?.sendMessage("test");
     setTimeout(() => {
       current_message = "";
     });
