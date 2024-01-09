@@ -26,9 +26,9 @@
     socket_write.set(sock);
   });
 
-  function sendMessage() {
+  async function sendMessage() {
     console.log(current_message);
-    socket?.sendMessage(current_message);
+    socket?.sendMessage({ message: current_message });
     current_message = "";
     setTimeout(() => {
       current_message = "";

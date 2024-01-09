@@ -1,6 +1,8 @@
 use server::Server;
 
 pub mod client_handle;
+pub mod messages;
+pub mod requests;
 pub mod server;
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 10)]

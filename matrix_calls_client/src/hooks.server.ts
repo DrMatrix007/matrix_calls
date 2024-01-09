@@ -20,8 +20,11 @@ export const handle = SvelteKitAuth({
     Spotify({
       clientId: SPOTIFY_ID,
       clientSecret: SPOTIFY_SECRET
-    })
+    }),
   ],
+  callbacks: (req, a, b) => {
+
+  }
   trustHost: true,
   secret: WEB_SECRET
 }) satisfies Handle;

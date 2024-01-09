@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import { writable, type Writable } from 'svelte/store';
 
 class ServerSocket {
@@ -17,9 +16,10 @@ class ServerSocket {
       this.messageStore.set(event.data);
     });
   }
-  sendMessage(message: string) {
+
+  sendMessage(message: any) {
     if (this.socket && this.socket.readyState <= 1) {
-      this.socket.send(message);
+      this.socket.send(JSON.stringify(message));
     }
   }
 
