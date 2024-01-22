@@ -1,6 +1,13 @@
 import express from 'express'
 import ws from 'ws'
+import dotenv from 'dotenv'
+
+dotenv.config();
+
+const JWT_KEY = process.env.JWT_SECRET;
+
 const app = express();
+
 
 
 const my_server = app.listen(6969);

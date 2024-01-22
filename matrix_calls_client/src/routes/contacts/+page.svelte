@@ -2,12 +2,15 @@
   import ServerSocket from "$lib/messages";
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
+  import type { LayoutServerData } from "../$types";
 
   let contacts = [
     { id: 1, name: "John Doe", email: "john@example.com" },
     { id: 2, name: "Jane Doe", email: "jane@example.com" },
     // Add more contacts as needed
   ];
+
+  export let data: LayoutServerData;
 
   let selectedContact: any | null = null;
   let messages: any[] = [];

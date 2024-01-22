@@ -29,11 +29,7 @@ export const handle = SvelteKitAuth({
 			clientSecret: SPOTIFY_SECRET,
 		}),
 	],
-	callbacks: {
-		jwt: (jwt, ..._data) => {
-			return jwt.token;
-		},
-	},
 	trustHost: true,
 	secret: WEB_SECRET,
 }) satisfies Handle;
+	

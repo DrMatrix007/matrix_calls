@@ -4,7 +4,6 @@
   import { onMount } from "svelte";
   import { signIn, signOut } from "@auth/sveltekit/client";
   let user: null | User = null;
-
   onMount(() => {
     const unsub = current_user.subscribe((data) => {
       user = data ?? null;

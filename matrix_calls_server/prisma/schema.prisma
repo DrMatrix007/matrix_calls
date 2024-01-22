@@ -7,16 +7,14 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "./haha_this_is_db.db"
+  url      = "file:./haha_this_is_db.db"
 }
 
 model User {
-  id                Int          @id @default(autoincrement())
-  username          String       @unique
-  Message           Message[]
-  Chat              Chat[]
-  FriendsSentFromMe Friendship[] @relation("A")
-  FriendsSentToMe   Friendship[] @relation("B")
+  id       Int       @id @default(autoincrement())
+  username String    @unique
+  Message  Message[]
+  Chat     Chat[]
 }
 
 model Message {
@@ -36,13 +34,4 @@ model Chat {
   updatedAt DateTime  @updatedAt
   users     User[]
   messages  Message[]
-}
-
-model Friendship {
-  user     User @relation("A", fields: [userId], references: [id])
-  target   User @relation("B", fields: [friendId], references: [id])
-  userId   Int
-  friendId Int
-
-  @@unique([userId, friendId])
 }
