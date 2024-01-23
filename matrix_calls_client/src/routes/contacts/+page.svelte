@@ -24,9 +24,11 @@
   socket_write.subscribe((x) => (socket = x));
 
   onMount(() => {
-    console.log("creating");
-    let sock = new ServerSocket();
-    socket_write.set(sock);
+    if (data.jwt) {
+      console.log("creating");
+      let sock = new ServerSocket(data.jwt);
+      socket_write.set(sock);
+    }
   });
 
   async function sendMessage() {
