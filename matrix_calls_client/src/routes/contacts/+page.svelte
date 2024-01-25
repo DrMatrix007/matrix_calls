@@ -4,6 +4,8 @@
   import { writable } from "svelte/store";
   import type { LayoutServerData } from "../$types";
 
+  type Message = { sender: string; text: string };
+
   let contacts_write = writable<{ name: string; email: string }[]>([]);
 
   onMount(() => {
@@ -12,10 +14,11 @@
 
   let contacts: { name: string; email: string }[] = [];
 
+  let messages = writable<Map<string, Message[]>>(new Map());
+
   export let data: LayoutServerData;
 
-  let selectedContact: any | null = null;
-  let messages: any[] = [];
+  let selected_contact: string | null = null;
 
   let current_message: string = "";
 
@@ -47,10 +50,24 @@
       contacts_write.set(obj.liveUsers as [{ name: string; email: string }]);
     }
   }
-
+  function append_message(selected_user: string, message: Message) {
+    messages.update((messages) => {
+      if (messages.get(selected_user)) {
+        messages.get(selected_user)?.push(message);
+      } else {
+        messages.set(selected_user, []);
+        append_message(selected_user, message);
+      }
+      return messages;
+    });
+  }
   async function sendMessage() {
     console.log(current_message);
-    socket?.sendMessage({ message: current_message });
+    socket?.sendMessage({ message: current_message, to: selected_contact });
+    append_message(selected_contact!, {
+      text: current_message,
+      sender: data.session!.user!.name!,
+    });
     current_message = "";
     setTimeout(() => {
       current_message = "";
@@ -61,19 +78,22 @@
 <div class="container">
   <div class="contact-list">
     {#each contacts as contact}
-      <button class="contact" on:click={() => (selectedContact = contact)}>
+      <button
+        class="contact"
+        on:click={() => (selected_contact = contact.name)}
+      >
         <p>{contact.name}</p>
         <p>{contact.email}</p>
       </button>
     {/each}
   </div>
   <div class="chat">
-    {#if selectedContact}
+    {#if selected_contact}
       <div class="chat-header">
-        <p>Chatting with {selectedContact.name}</p>
+        <p>Chatting with {selected_contact}</p>
       </div>
       <div class="message-list">
-        {#each messages as message (message.text)}
+        {#each messages.get(selected_contact) || [] as message (message.text)}
           <div class="message">
             <p>{message.sender}</p>
             <p>{message.text}</p>

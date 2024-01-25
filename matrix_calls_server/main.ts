@@ -36,6 +36,7 @@ my_server.on("upgrade", (req, sock, head) => {
             ws.onclose = (_event) => {
               delete connected_users[user_data.name];
             }
+            ws.onmessage = handle_client;
             update_all_current();
           }
         }
@@ -48,6 +49,14 @@ my_server.on("upgrade", (req, sock, head) => {
 
 
 function handle_client(message: ws.MessageEvent) {
+  console.log(message.data);
+  let data = null;
+  try {
+    data = JSON.parse(message.data.toString());
+  } catch (_) { }
+  if (!data) return;
+
+
 
 }
 function update_all_current() {
