@@ -24,7 +24,8 @@
       <button on:click={() => signOut()}>logout</button>
     </div>
   {:else}
-    <button on:click={() => signIn()}> login </button>
+    <button on:click={() => signIn("github")}> login with github</button>
+    <button on:click={() => signIn("spotify")}> login with spotify </button>
   {/if}
 </div>
 

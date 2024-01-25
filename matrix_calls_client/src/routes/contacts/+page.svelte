@@ -14,8 +14,11 @@
 
   let contacts: { name: string; email: string }[] = [];
 
-  let messages = writable<Map<string, Message[]>>(new Map());
-
+  let messages_write = writable<Map<string, Message[]>>(new Map());
+  let messages = new Map();
+  onMount(() => {
+    return messages_write.subscribe((data) => (messages = data));
+  });
   export let data: LayoutServerData;
 
   let selected_contact: string | null = null;
@@ -41,17 +44,22 @@
   });
 
   function handle_message(data: string) {
-    let obj = null;
+    let obj: null | any = null;
     try {
       obj = JSON.parse(data);
     } catch (e) {}
     if (!obj) return;
     if (obj.liveUsers) {
       contacts_write.set(obj.liveUsers as [{ name: string; email: string }]);
+    } else if (obj.sender && obj.text) {
+      append_message(obj.sender, {
+        sender: obj.sender,
+        text: obj.text,
+      });
     }
   }
   function append_message(selected_user: string, message: Message) {
-    messages.update((messages) => {
+    messages_write.update((messages) => {
       if (messages.get(selected_user)) {
         messages.get(selected_user)?.push(message);
       } else {
@@ -93,7 +101,7 @@
         <p>Chatting with {selected_contact}</p>
       </div>
       <div class="message-list">
-        {#each messages.get(selected_contact) || [] as message (message.text)}
+        {#each messages.get(selected_contact) || [] as message, i (i)}
           <div class="message">
             <p>{message.sender}</p>
             <p>{message.text}</p>

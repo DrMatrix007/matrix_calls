@@ -1,5 +1,8 @@
 import { SvelteKitAuth } from "@auth/sveltekit";
 import Google from "@auth/core/providers/google";
+import GitHub from "@auth/core/providers/github";
+import Spotify from "@auth/core/providers/spotify";
+
 import type { Handle } from "@sveltejs/kit";
 
 import {
@@ -11,8 +14,6 @@ import {
 	SPOTIFY_SECRET,
 	WEB_SECRET,
 } from "$env/static/private";
-import GitHub from "@auth/core/providers/github";
-import Spotify from "@auth/core/providers/spotify";
 
 export const handle = SvelteKitAuth({
 	providers: [
@@ -32,4 +33,4 @@ export const handle = SvelteKitAuth({
 	trustHost: true,
 	secret: WEB_SECRET,
 }) satisfies Handle;
-	
+

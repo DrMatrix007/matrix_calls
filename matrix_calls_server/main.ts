@@ -29,14 +29,15 @@ my_server.on("upgrade", (req, sock, head) => {
         if (data.auth) {
           const user_data = jwt.decode(data.auth) as jwt.JwtPayload;
           if (user_data?.name && user_data?.email) {
+            const user = { name: user_data.name, email: user_data.email };
             connected_users[user_data.name] = [
-              { name: user_data.name, email: user_data.email },
+              user,
               ws,
             ];
             ws.onclose = (_event) => {
               delete connected_users[user_data.name];
             }
-            ws.onmessage = handle_client;
+            ws.onmessage = create_handle_client(user);
             update_all_current();
           }
         }
@@ -47,17 +48,25 @@ my_server.on("upgrade", (req, sock, head) => {
   });
 });
 
+function create_handle_client(user_data: UserData): ((data: ws.MessageEvent) => void) {
+  let handle_client = (message: ws.MessageEvent) => {
+    console.log(message.data);
+    let data: null | any = null;
+    try {
+      data = JSON.parse(message.data.toString());
+    } catch (_) { }
+    if (!data) return;
 
-function handle_client(message: ws.MessageEvent) {
-  console.log(message.data);
-  let data = null;
-  try {
-    data = JSON.parse(message.data.toString());
-  } catch (_) { }
-  if (!data) return;
+    if (data?.message && data?.to) {
+      let other = connected_users[data.to][1];
+      other.send(JSON.stringify({
+        text: data.message,
+        sender: user_data.name
+      }));
+    }
 
-
-
+  }
+  return handle_client;
 }
 function update_all_current() {
   let username_to_data = Object.values(connected_users).map(val => val[0]);
