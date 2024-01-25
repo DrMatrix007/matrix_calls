@@ -12,6 +12,9 @@ const ws_server = new ws.Server({
   noServer: true,
 });
 
+
+const connected_uesrs = {};
+
 my_server.on("upgrade", (req, sock, head) => {
   ws_server.handleUpgrade(req, sock, head, (ws) => {
     ws.onmessage = (a) => {
@@ -29,3 +32,8 @@ my_server.on("upgrade", (req, sock, head) => {
     };
   });
 });
+
+
+function handle_client(message: ws.MessageEvent) {
+
+}
