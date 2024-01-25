@@ -4,11 +4,13 @@
   import { writable } from "svelte/store";
   import type { LayoutServerData } from "../$types";
 
-  let contacts = [
-    { id: 1, name: "John Doe", email: "john@example.com" },
-    { id: 2, name: "Jane Doe", email: "jane@example.com" },
-    // Add more contacts as needed
-  ];
+  let contacts_write = writable<{ name: string; email: string }[]>([]);
+
+  onMount(() => {
+    return contacts_write.subscribe((data) => (contacts = data));
+  });
+
+  let contacts: { name: string; email: string }[] = [];
 
   export let data: LayoutServerData;
 
@@ -28,8 +30,23 @@
       console.log("creating");
       let sock = new ServerSocket(data.jwt);
       socket_write.set(sock);
+      return sock.subscribe((message) => {
+        console.log(message);
+        handle_message(message);
+      });
     }
   });
+
+  function handle_message(data: string) {
+    let obj = null;
+    try {
+      obj = JSON.parse(data);
+    } catch (e) {}
+    if (!obj) return;
+    if (obj.liveUsers) {
+      contacts_write.set(obj.liveUsers as [{ name: string; email: string }]);
+    }
+  }
 
   async function sendMessage() {
     console.log(current_message);
@@ -43,7 +60,7 @@
 
 <div class="container">
   <div class="contact-list">
-    {#each contacts as contact (contact.id)}
+    {#each contacts as contact}
       <button class="contact" on:click={() => (selectedContact = contact)}>
         <p>{contact.name}</p>
         <p>{contact.email}</p>

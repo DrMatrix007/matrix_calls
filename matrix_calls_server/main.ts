@@ -33,6 +33,9 @@ my_server.on("upgrade", (req, sock, head) => {
               { name: user_data.name, email: user_data.email },
               ws,
             ];
+            ws.onclose = (_event) => {
+              delete connected_users[user_data.name];
+            }
             update_all_current();
           }
         }
@@ -47,4 +50,20 @@ my_server.on("upgrade", (req, sock, head) => {
 function handle_client(message: ws.MessageEvent) {
 
 }
-function update_all_current() { }
+function update_all_current() {
+  let username_to_data = Object.values(connected_users).map(val => val[0]);
+  let username_to_sockets = Object.fromEntries(Object.keys(connected_users).map(key => [key, connected_users[key][1]]))
+
+  for (let index = 0; index < username_to_data.length; index++) {
+    const user_data = username_to_data[index];
+
+    let data = username_to_data.filter(data => (data.name != user_data.name));
+
+    username_to_sockets[user_data.name].send(JSON.stringify({
+      liveUsers: data
+    }));
+
+
+  }
+
+}
