@@ -107,6 +107,11 @@
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
 
+      socket?.sendMessage({
+        call_to: target,
+        offer: offer,
+      });
+
       alert("done with stat_call funtion");
     } else {
       alert("error, try again!");
