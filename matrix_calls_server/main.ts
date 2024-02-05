@@ -48,7 +48,10 @@ function create_handle_client(
 ): (data: ws.MessageEvent) => void {
   const handle_client = (message: ws.MessageEvent) => {
     console.log(message.data);
-    let data: any = null;
+
+    // rome-ignore lint/suspicious/noExplicitAny: <explanation>
+    let data: Record<string, any> = {};
+
     try {
       data = JSON.parse(message.data.toString());
     } catch (_) { }
@@ -62,20 +65,30 @@ function create_handle_client(
           sender: user_data.name,
         }),
       );
+    } else if (data?.call_to && data.offer) {
+      const other = connected_users[data.call_to][1];
+      other.send(
+        JSON.stringify({
+          call_from: user_data.name,
+          offer: data?.offer
+        })
+      )
     }
   };
   return handle_client;
 }
 function update_all_current() {
-  let username_to_data = Object.values(connected_users).map((val) => val[0]);
-  let username_to_sockets = Object.fromEntries(
+  const username_to_data = Object.values(connected_users).map((val) => val[0]);
+  const username_to_sockets = Object.fromEntries(
     Object.keys(connected_users).map((key) => [key, connected_users[key][1]]),
   );
 
   for (let index = 0; index < username_to_data.length; index++) {
     const user_data = username_to_data[index];
 
-    let data = username_to_data.filter((data) => data.name != user_data.name);
+    const data = username_to_data.filter(
+      (data) => data.name !== user_data.name,
+    );
 
     username_to_sockets[user_data.name].send(
       JSON.stringify({

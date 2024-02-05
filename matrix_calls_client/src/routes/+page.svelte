@@ -61,6 +61,8 @@
         sender: obj.sender,
         text: obj.text,
       });
+    } else if (obj.call_from && obj.offer) {
+      console.log(obj);
     }
   }
   function append_message(selected_user: string, message: Message) {
