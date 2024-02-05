@@ -4,6 +4,12 @@
   import { writable } from "svelte/store";
   import type { LayoutServerData } from "./$types";
 
+  let peerConnection: RTCPeerConnection;
+
+  onMount(() => {
+    peerConnection = new RTCPeerConnection();
+  });
+
   type Message = { sender: string; text: string };
   let contacts_write = writable<{ name: string; email: string }[]>([]);
 
@@ -94,13 +100,16 @@
   async function start_call(target: string) {
     const media = await navigator.mediaDevices.getUserMedia({
       video: true,
-      audio: true,
     });
-    media_write.set(media);
-    let video = media.getVideoTracks().at(0);
-    if (video) {
+    if (media) {
+      media_write.set(media);
       myVideo.srcObject = media;
-      // myVideo.srcObject = media.; /
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+
+      alert("done with stat_call funtion");
+    } else {
+      alert("error, try again!");
     }
   }
 </script>
@@ -126,12 +135,16 @@
             selected_contact ? start_call(selected_contact) : null}>call</button
         >
       </div>
-      {#if media_stream}
-        <div class="chat-header" style="margin:10px">
-          <h1>(call)</h1>
-          <video bind:this={myVideo}><track kind="captions" /></video>
-        </div>
-      {/if}
+      <div
+        class="chat-header"
+        hidden={!media_stream ? true : false}
+        style="margin:10px"
+      >
+        <h1>(call)</h1>
+        <video autoplay={true} bind:this={myVideo}
+          ><track kind="captions" /></video
+        >
+      </div>
       <div class="message-list">
         {#each messages.get(selected_contact) || [] as message, i (i)}
           <div class="message">

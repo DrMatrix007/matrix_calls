@@ -1,12 +1,18 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body class="main_holder" data-sveltekit-preload-data="hover">
-		<div class="main_holder" style="display: contents">%sveltekit.body%</div>
-	</body>
+
+<head>
+	<meta charset="utf-8" />
+	<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	%sveltekit.head%
+</head>
+
+<body class="main_holder" data-sveltekit-preload-data="hover">
+	<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
+	<div class="main_holder" style="display: contents">%sveltekit.body%</div>
+
+</body>
+
 </html>
