@@ -7,7 +7,14 @@
   let peerConnection: RTCPeerConnection;
 
   onMount(() => {
-    peerConnection = new RTCPeerConnection();
+    peerConnection = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+    peerConnection.onconnectionstatechange = (e) => {
+      if (peerConnection.connectionState == "connected") {
+        alert("connected!!!!!!!!");
+      }
+    };
   });
 
   type Message = { sender: string; text: string };
@@ -48,7 +55,7 @@
     }
   });
 
-  function handle_message(data: string) {
+  async function handle_message(data: string) {
     let obj: null | any = null;
     try {
       obj = JSON.parse(data);
@@ -62,7 +69,20 @@
         text: obj.text,
       });
     } else if (obj.call_from && obj.offer) {
+      // this is the reviever of the call
       console.log(obj);
+      peerConnection.setRemoteDescription(new RTCSessionDescription(obj.offer));
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      console.log("set asnwer offer and remote");
+      selected_contact;
+      socket?.sendMessage({ call_to: obj.call_from, answer: answer });
+    } else if (obj.call_from && obj.answer) {
+      // initiative of the call
+      peerConnection.setRemoteDescription(
+        new RTCSessionDescription(obj.answer),
+      );
+      console.log("set remote offer");
     }
   }
   function append_message(selected_user: string, message: Message) {
@@ -108,7 +128,7 @@
       myVideo.srcObject = media;
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
-
+      console.log("set local offer");
       socket?.sendMessage({
         call_to: target,
         offer: offer,

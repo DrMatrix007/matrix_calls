@@ -6,7 +6,8 @@
   let user: null | User = null;
   onMount(() => {
     const unsub = current_user.subscribe((data) => {
-      user = data ?? null;
+      user = data ? data : null;
+      console.log(user);
     });
     return unsub;
   });
@@ -20,10 +21,13 @@
   <div style="flex-grow: 1;"></div>
   {#if user}
     <div class="profile">
-      <p>logged in as {user.name}</p>
-      <button on:click={() => signOut()}>logout</button>
+      <p>logged in as {user.name}{!user.email ? ", as anonymous" : ""}</p>
+      {#if user.email}
+        <button on:click={() => signOut()}>logout</button>
+      {/if}
     </div>
-  {:else}
+  {/if}
+  {#if !user?.email}
     <button on:click={() => signIn("github")}> login with github</button>
     <button on:click={() => signIn("spotify")}> login with spotify </button>
   {/if}

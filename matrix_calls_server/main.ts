@@ -26,7 +26,7 @@ my_server.on("upgrade", (req, sock, head) => {
         const data = JSON.parse(a.data.toString());
         if (data.auth) {
           const user_data = jwt.decode(data.auth) as jwt.JwtPayload;
-          if (user_data?.name && user_data?.email) {
+          if (user_data?.name && user_data?.email !== undefined) {
             const user = { name: user_data.name, email: user_data.email };
             connected_users[user_data.name] = [user, ws];
             ws.onclose = (_event) => {
@@ -70,9 +70,17 @@ function create_handle_client(
       other.send(
         JSON.stringify({
           call_from: user_data.name,
-          offer: data?.offer
-        })
-      )
+          offer: data?.offer,
+        }),
+      );
+    } else if (data?.call_to && data.answer) {
+      const other = connected_users[data.call_to][1];
+      other.send(
+        JSON.stringify({
+          call_from: user_data.name,
+          answer: data.answer,
+        }),
+      );
     }
   };
   return handle_client;
