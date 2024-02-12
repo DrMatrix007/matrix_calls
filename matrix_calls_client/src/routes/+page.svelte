@@ -11,6 +11,7 @@
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
     peerConnection.onconnectionstatechange = (e) => {
+      console.log("changed state: ", peerConnection.connectionState);
       if (peerConnection.connectionState == "connected") {
         alert("connected!!!!!!!!");
       }
@@ -72,19 +73,58 @@
       // this is the reviever of the call
       console.log(obj);
       peerConnection.setRemoteDescription(new RTCSessionDescription(obj.offer));
+
+      const media = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+      if (media) {
+        media_write.set(media);
+        myVideo.srcObject = media;
+        media?.getTracks().forEach((track) => {
+          peerConnection.addTrack(track);
+        });
+      }
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       console.log("set asnwer offer and remote");
       selected_contact;
       socket?.sendMessage({ call_to: obj.call_from, answer: answer });
+      setup_icecandidate();
     } else if (obj.call_from && obj.answer) {
       // initiative of the call
       peerConnection.setRemoteDescription(
         new RTCSessionDescription(obj.answer),
       );
+      setup_icecandidate();
       console.log("set remote offer");
+    } else if (obj.icecandidate) {
+      console.log("got ice_canddiate", obj.icecandidate);
+
+      await peerConnection.addIceCandidate(obj.icecandidate);
+      setup_video_track();
     }
   }
+
+  function setup_icecandidate() {
+    peerConnection.onicecandidateerror = (_) => {
+      console.log("error !!!");
+    };
+    peerConnection.onicecandidate = async (event) => {
+      if (event.candidate) {
+        console.log("have ice candidate");
+        // await peerConnection?.addIceCandidate(event.candidate);
+        socket?.sendMessage({
+          call_to: selected_contact,
+          icecandidate: event.candidate,
+        });
+        setup_video_track();
+      } else {
+        console.log("null ice_candidate");
+      }
+    };
+    console.log("setting up ice_candidate");
+  }
+
   function append_message(selected_user: string, message: Message) {
     messages_write.update((messages) => {
       if (messages.get(selected_user)) {
@@ -108,6 +148,24 @@
       current_message = "";
     });
   }
+  function setup_video_track() {
+    peerConnection.ontrack = (a) => {
+      console.log("got track!");
+      const [video] = a.streams;
+      remote_tracks_write.update((a) => {
+        a.push(video);
+        return a;
+      });
+    };
+  }
+
+  const remote_tracks_write = writable<MediaStream[]>([]);
+
+  let remote_tracks: MediaStream[] = [];
+
+  onMount(() => {
+    remote_tracks_write.subscribe((a) => (remote_tracks = a));
+  });
 
   const media_write = writable<null | MediaStream>(null);
 
@@ -119,6 +177,19 @@
 
   let myVideo: HTMLVideoElement;
 
+  let video_div: HTMLDivElement;
+
+  let remote_videos: HTMLDivElement;
+
+  onMount(() => {
+    return remote_tracks_write.subscribe((a) => {
+      a.forEach((a, i) => {
+        let child = remote_videos.children[i] as HTMLVideoElement;
+        child.srcObject = a;
+      });
+    });
+  });
+
   async function start_call(target: string) {
     const media = await navigator.mediaDevices.getUserMedia({
       video: true,
@@ -126,6 +197,9 @@
     if (media) {
       media_write.set(media);
       myVideo.srcObject = media;
+      media?.getTracks().forEach((track) => {
+        peerConnection.addTrack(track);
+      });
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
       console.log("set local offer");
@@ -163,6 +237,7 @@
         >
       </div>
       <div
+        bind:this={video_div}
         class="chat-header"
         hidden={!media_stream ? true : false}
         style="margin:10px"
@@ -171,6 +246,13 @@
         <video autoplay={true} bind:this={myVideo}
           ><track kind="captions" /></video
         >
+        <div bind:this={remote_videos}>
+          {#each remote_tracks as remote_track}
+            <video autoplay={true}>
+              <track kind="captions" />
+            </video>
+          {/each}
+        </div>
       </div>
       <div class="message-list">
         {#each messages.get(selected_contact) || [] as message, i (i)}

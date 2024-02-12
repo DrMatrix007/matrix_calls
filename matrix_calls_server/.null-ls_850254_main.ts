@@ -82,11 +82,7 @@ function create_handle_client(
         }),
       );
     } else if (data?.call_to && data.icecandidate) {
-      const other = connected_users[data.call_to][1];
-      other.send(JSON.stringify({
-        call_from: user_data.name,
-        icecandidate: data.icecandidate
-      }))
+      const other = connected_users[data.call_to];
     }
   };
   return handle_client;
