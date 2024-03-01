@@ -13,7 +13,6 @@
     peerConnection.onconnectionstatechange = (e) => {
       console.log("changed state: ", peerConnection.connectionState);
       if (peerConnection.connectionState == "connected") {
-        alert("connected!!!!!!!!");
       }
     };
   });
@@ -70,6 +69,9 @@
       });
     } else if (obj.call_from && obj.offer) {
       // this is the reviever of the call
+      // if (!confirm(`call from ${obj.call_from}`)) {
+      // return;
+      // }
       console.log(obj);
       peerConnection.setRemoteDescription(new RTCSessionDescription(obj.offer));
 
@@ -310,7 +312,7 @@
     text-align: center;
   }
   .chat-video {
-    width: 100px;
+    width: 400px;
   }
   .message-list {
     flex-grow: 1;
