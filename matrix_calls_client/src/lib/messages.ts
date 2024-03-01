@@ -9,8 +9,6 @@ class ServerSocket {
     this.socket = new WebSocket("ws://localhost:6969");
 
     this.socket?.addEventListener("open", (_event) => {
-      console.log("It's open");
-      console.log("auhteticating");
       this.socket.send(
         JSON.stringify({
           auth: jwt,

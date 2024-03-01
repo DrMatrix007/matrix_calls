@@ -46,7 +46,6 @@
 
   onMount(() => {
     if (data.jwt) {
-      console.log("creating");
       let sock = new ServerSocket(data.jwt);
       socket_write.set(sock);
       return sock.subscribe((message) => {
@@ -81,12 +80,12 @@
         media_write.set(media);
         myVideo.srcObject = media;
         media?.getTracks().forEach((track) => {
-          peerConnection.addTrack(track);
+          peerConnection.addTrack(track, media);
+          console.log("added track", track);
         });
       }
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
-      console.log("set asnwer offer and remote");
       selected_contact;
       socket?.sendMessage({ call_to: obj.call_from, answer: answer });
       setup_icecandidate();
@@ -96,16 +95,15 @@
         new RTCSessionDescription(obj.answer),
       );
       setup_icecandidate();
-      console.log("set remote offer");
     } else if (obj.icecandidate) {
-      console.log("got ice_canddiate", obj.icecandidate);
-
+      // setup_video_track();
       await peerConnection.addIceCandidate(obj.icecandidate);
-      setup_video_track();
     }
   }
 
   function setup_icecandidate() {
+    setup_video_track();
+
     peerConnection.onicecandidateerror = (_) => {
       console.log("error !!!");
     };
@@ -117,7 +115,6 @@
           call_to: selected_contact,
           icecandidate: event.candidate,
         });
-        setup_video_track();
       } else {
         console.log("null ice_candidate");
       }
@@ -149,8 +146,9 @@
     });
   }
   function setup_video_track() {
+    console.log("setting up video tracks");
     peerConnection.ontrack = (a) => {
-      console.log("got track!");
+      console.log("got track! from remote");
       const [video] = a.streams;
       remote_tracks_write.update((a) => {
         a.push(video);
@@ -183,10 +181,20 @@
 
   onMount(() => {
     return remote_tracks_write.subscribe((a) => {
-      a.forEach((a, i) => {
-        let child = remote_videos.children[i] as HTMLVideoElement;
-        child.srcObject = a;
-      });
+      if (remote_videos) {
+        remote_videos.innerHTML = "";
+        console.log(a);
+        // console.log("length of remote div", remote_videos.children.length);
+        a.forEach((a, i) => {
+          const child = document.createElement("video");
+          child.className = myVideo.className;
+          child.srcObject = a;
+          // child.autoplay = true;
+          console.log(a);
+          remote_videos.appendChild(child);
+          child.play();
+        });
+      }
     });
   });
 
@@ -198,11 +206,11 @@
       media_write.set(media);
       myVideo.srcObject = media;
       media?.getTracks().forEach((track) => {
-        peerConnection.addTrack(track);
+        console.log("adding track im caller", track);
+        peerConnection.addTrack(track, media);
       });
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
-      console.log("set local offer");
       socket?.sendMessage({
         call_to: target,
         offer: offer,
@@ -236,22 +244,24 @@
             selected_contact ? start_call(selected_contact) : null}>call</button
         >
       </div>
+      <h1>(call)</h1>
       <div
         bind:this={video_div}
         class="chat-header"
         hidden={!media_stream ? true : false}
-        style="margin:10px"
+        style="margin:10px;display: flex"
       >
-        <h1>(call)</h1>
-        <video autoplay={true} bind:this={myVideo}
-          ><track kind="captions" /></video
-        >
+        <div>
+          <video autoplay={true} class="chat-video" bind:this={myVideo}
+            ><track kind="captions" /></video
+          >
+        </div>
+        {#if remote_videos?.children.length}
+          <!-- content here -->
+          <div>remote vid</div>
+        {/if}
         <div bind:this={remote_videos}>
-          {#each remote_tracks as remote_track}
-            <video autoplay={true}>
-              <track kind="captions" />
-            </video>
-          {/each}
+          <!-- {#each remote_tracks as remote_track}{/each} -->
         </div>
       </div>
       <div class="message-list">
@@ -299,7 +309,9 @@
     padding: 10px;
     text-align: center;
   }
-
+  .chat-video {
+    width: 100px;
+  }
   .message-list {
     flex-grow: 1;
     overflow-y: auto;
