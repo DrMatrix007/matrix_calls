@@ -73,7 +73,6 @@
       // return;
       // }
       console.log(obj);
-      peerConnection.setRemoteDescription(new RTCSessionDescription(obj.offer));
 
       const media = await navigator.mediaDevices.getUserMedia({
         video: true,
@@ -86,6 +85,10 @@
           console.log("added track", track);
         });
       }
+      setup_icecandidate();
+      await peerConnection.setRemoteDescription(
+        new RTCSessionDescription(obj.offer),
+      );
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       selected_contact;
@@ -96,7 +99,6 @@
       peerConnection.setRemoteDescription(
         new RTCSessionDescription(obj.answer),
       );
-      setup_icecandidate();
     } else if (obj.icecandidate) {
       // setup_video_track();
       await peerConnection.addIceCandidate(obj.icecandidate);
@@ -202,7 +204,11 @@
 
   async function start_call(target: string) {
     const media = await navigator.mediaDevices.getUserMedia({
-      video: true,
+      video: {
+        frameRate: 10 + Math.random() * 100,
+        // width: Math.random() * 50 + 50,
+        // height: Math.random() * 50 + 50,
+      },
     });
     if (media) {
       media_write.set(media);
@@ -217,7 +223,7 @@
         call_to: target,
         offer: offer,
       });
-
+      setup_icecandidate();
       alert("done with stat_call funtion");
     } else {
       alert("error, try again!");
