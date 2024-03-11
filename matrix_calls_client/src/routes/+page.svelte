@@ -99,6 +99,10 @@
   }
 
   function decline_call(obj: { offer: any; call_from: string }) {
+    callers_write.update((data) => {
+      data.delete(obj.call_from!);
+      return data;
+    });
     console.log("call declined");
     socket?.sendMessage({ call_to: obj.call_from, no: "no" });
     cleanup_call();
@@ -106,6 +110,11 @@
   }
 
   async function accecpt_call(obj: { offer: any; call_from: string | null }) {
+    callers_write.update((data) => {
+      data.delete(obj.call_from!);
+      return data;
+    });
+    peerConnection.restartIce();
     const media = await navigator.mediaDevices.getUserMedia({
       video: true,
     });
