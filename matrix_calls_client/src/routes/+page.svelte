@@ -43,6 +43,14 @@
 
   socket_write.subscribe((x) => (socket = x));
 
+  let callers_write = writable<Map<string, any>>(new Map());
+
+  let callers: Map<string | null, any> = new Map();
+
+  onMount(() => {
+    return callers_write.subscribe((data) => (callers = data));
+  });
+
   onMount(() => {
     if (data.jwt) {
       let sock = new ServerSocket(data.jwt);
@@ -67,33 +75,18 @@
         sender: obj.sender,
         text: obj.text,
       });
+    } else if (obj.call_from && obj.no) {
+      // peerConnection.close();
+      cleanup_call();
     } else if (obj.call_from && obj.offer) {
       // this is the reviever of the call
-      // if (!confirm(`call from ${obj.call_from}`)) {
-      // return;
-      // }
-      console.log(obj);
-
-      const media = await navigator.mediaDevices.getUserMedia({
-        video: true,
+      // let res = window.confirm(`call from ${obj.call_from} + ${Math.random()}`);
+      // decline_call(obj);
+      callers_write.update((data) => {
+        data.set(obj.call_from, obj.offer);
+        return data;
       });
-      if (media) {
-        media_write.set(media);
-        myVideo.srcObject = media;
-        media?.getTracks().forEach((track) => {
-          peerConnection.addTrack(track, media);
-          console.log("added track", track);
-        });
-      }
-      setup_icecandidate();
-      await peerConnection.setRemoteDescription(
-        new RTCSessionDescription(obj.offer),
-      );
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      selected_contact;
-      socket?.sendMessage({ call_to: obj.call_from, answer: answer });
-      setup_icecandidate();
+      // await accecpt_call(obj);
     } else if (obj.call_from && obj.answer) {
       // initiative of the call
       peerConnection.setRemoteDescription(
@@ -103,6 +96,36 @@
       // setup_video_track();
       await peerConnection.addIceCandidate(obj.icecandidate);
     }
+  }
+
+  function decline_call(obj: { offer: any; call_from: string }) {
+    console.log("call declined");
+    socket?.sendMessage({ call_to: obj.call_from, no: "no" });
+    cleanup_call();
+    return;
+  }
+
+  async function accecpt_call(obj: { offer: any; call_from: string | null }) {
+    const media = await navigator.mediaDevices.getUserMedia({
+      video: true,
+    });
+    if (media) {
+      media_write.set(media);
+      myVideo.srcObject = media;
+      media?.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, media);
+        console.log("added track", track);
+      });
+    }
+    setup_icecandidate();
+    await peerConnection.setRemoteDescription(
+      new RTCSessionDescription(obj.offer),
+    );
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    selected_contact;
+    socket?.sendMessage({ call_to: obj.call_from, answer: answer });
+    setup_icecandidate();
   }
 
   function setup_icecandidate() {
@@ -160,7 +183,14 @@
       });
     };
   }
-
+  function cleanup_call() {
+    media_stream?.getTracks().forEach(function (track) {
+      track.stop();
+    });
+    remote_tracks_write.update((_) => []);
+    media_write.update((_) => null);
+    peerConnection.close();
+  }
   const remote_tracks_write = writable<MediaStream[]>([]);
 
   let remote_tracks: MediaStream[] = [];
@@ -203,11 +233,12 @@
   });
 
   async function start_call(target: string) {
+    peerConnection.restartIce();
     const media = await navigator.mediaDevices.getUserMedia({
       video: {
-        frameRate: 10 + Math.random() * 100,
-        // width: Math.random() * 50 + 50,
-        // height: Math.random() * 50 + 50,
+        // frameRate: 10 + Math.random() * 100,
+        width: Math.random() * 10 + 90,
+        height: Math.random() * 10 + 90,
       },
     });
     if (media) {
@@ -259,6 +290,19 @@
         hidden={!media_stream ? true : false}
         style="margin:10px;display: flex"
       >
+        {#if callers.get(selected_contact)}
+          <div>
+            <button
+              on:click={() => {
+                accecpt_call({
+                  call_from: selected_contact,
+                  offer: callers.get(selected_contact),
+                });
+              }}>accecpt</button
+            >
+            <button>decline</button>
+          </div>
+        {/if}
         <div>
           <video autoplay={true} class="chat-video" bind:this={myVideo}
             ><track kind="captions" /></video

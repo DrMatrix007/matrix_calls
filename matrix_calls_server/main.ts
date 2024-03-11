@@ -1,4 +1,4 @@
-import express from "express";
+import express, { json } from "express";
 import ws from "ws";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
@@ -86,6 +86,13 @@ function create_handle_client(
       other.send(JSON.stringify({
         call_from: user_data.name,
         icecandidate: data.icecandidate
+      }))
+    }
+    else if (data?.call_to && data.no === "no") {
+      const other = connected_users[data.call_to][1];
+      other.send(JSON.stringify({
+        call_from: user_data.name,
+        no: "no"
       }))
     }
   };
