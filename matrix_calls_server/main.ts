@@ -40,6 +40,7 @@ my_server.on("upgrade", (req, sock, head) => {
         console.error(e);
       }
     };
+    
   });
 });
 
@@ -47,7 +48,7 @@ function create_handle_client(
   user_data: UserData,
 ): (data: ws.MessageEvent) => void {
   const handle_client = (message: ws.MessageEvent) => {
-    console.log(message.data);
+    // console.log(message.data);
 
     // rome-ignore lint/suspicious/noExplicitAny: <explanation>
     let data: Record<string, any> = {};
