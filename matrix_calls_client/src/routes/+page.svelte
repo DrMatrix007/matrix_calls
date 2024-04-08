@@ -6,18 +6,16 @@
 
     let peerConnection: RTCPeerConnection;
 
-    onMount(() => {
-    });
-    
-    function setup_peer_connection() {
+    onMount(() => {});
 
+    function setup_peer_connection() {
         peerConnection = new RTCPeerConnection({
             iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
         });
         peerConnection.onconnectionstatechange = (e) => {
             console.log("changed state: ", peerConnection.connectionState);
             if (peerConnection.connectionState == "connected") {
-            }else if (peerConnection.connectionState == "disconnected") {
+            } else if (peerConnection.connectionState == "disconnected") {
                 disconnect();
             }
         };
@@ -284,6 +282,8 @@
         peerConnection.close();
         myVideo.srcObject = null;
         remote_tracks_write.set([]);
+        media_stream?.getTracks().forEach((e) => media_stream?.removeTrack(e));
+        media_write.set(null);
     }
 </script>
 
@@ -339,7 +339,7 @@
                 {#if remote_videos?.children.length}
                     <!-- content here -->
                     <div>remote vid</div>
-                    <button on:click={()=>disconnect()}>disconnect</button>
+                    <button on:click={() => disconnect()}>disconnect</button>
                 {/if}
                 <div bind:this={remote_videos}>
                     <!-- {#each remote_tracks as remote_track}{/each} -->
