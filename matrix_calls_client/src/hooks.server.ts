@@ -12,7 +12,7 @@ import {
 	GOOGLE_SECRET,
 	SPOTIFY_ID,
 	SPOTIFY_SECRET,
-	WEB_SECRET,
+    JWT_SECRET,
 } from "$env/static/private";
 
 export const handle = SvelteKitAuth({
@@ -31,6 +31,6 @@ export const handle = SvelteKitAuth({
 		}),
 	],
 	trustHost: true,
-	secret: WEB_SECRET,
+	secret: JWT_SECRET,
 }) satisfies Handle;
 
