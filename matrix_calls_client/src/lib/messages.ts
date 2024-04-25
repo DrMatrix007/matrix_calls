@@ -6,7 +6,7 @@ class ServerSocket {
 
   constructor(jwt: string) {
     this.messageStore = writable("");
-    this.socket = new WebSocket("wss://localhost:6969");
+    this.socket = new WebSocket("ws://localhost:6968");
     // this.socket = new WebSocket("wss://192.168.88.81:6969");
 
     this.socket?.addEventListener("open", (_event) => {

@@ -13,23 +13,15 @@ type UserData = {
 
 const connected_users: Record<string, [UserData, ws.WebSocket]> = {};
 
+
+
 const app = express();
 
-// const my_server = app.listen(6969);
-
-
-
-const httpsServer = new https.Server({
-    cert: fs.readFileSync("./cert/cert.pem", "utf8"),
-    key: fs.readFileSync("./cert/key-rsa.pem", "utf8"),
-},app);
-
-httpsServer.listen(6969);
+const httpsServer = app.listen(6968);
 // httpsServer.listen(6969);
 const ws_server = new ws.Server({
     server: httpsServer
 });
-console.log("listen");
 // .on("upgrade", (req, sock, head) => {
 ws_server.on("connection", (ws) => {
     ws.onmessage = (a) => {
@@ -54,7 +46,6 @@ ws_server.on("connection", (ws) => {
 
 });
 // });
-httpsServer.listen(6969);
 function create_handle_client(
     user_data: UserData,
 ): (data: ws.MessageEvent) => void {
@@ -130,3 +121,5 @@ function update_all_current() {
         );
     }
 }
+
+app.listen(6969)
