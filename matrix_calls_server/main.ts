@@ -13,12 +13,12 @@ type UserData = {
 
 const connected_users: Record<string, [UserData, ws.WebSocket]> = {};
 
-
+const port = process.env.PORT || 3000
 
 const app = express();
 
-const httpsServer = app.listen(6968);
-// httpsServer.listen(6969);
+const httpsServer = app.listen(port);
+console.log('listening on ', port);
 const ws_server = new ws.Server({
     server: httpsServer
 });
