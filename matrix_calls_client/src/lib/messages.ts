@@ -6,8 +6,8 @@ class ServerSocket {
 
   constructor(jwt: string) {
     this.messageStore = writable("");
-    this.socket = new WebSocket("wss://matrix-calls-ws.vercel.app");
-    // this.socket = new WebSocket("wss://192.168.88.81:6969");
+    // this.socket = new WebSocket("wss://matrix-calls-ws.vercel.app");
+    this.socket = new WebSocket("ws://localhost:3000");
 
     this.socket?.addEventListener("open", (_event) => {
       this.socket.send(

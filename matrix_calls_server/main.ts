@@ -1,9 +1,7 @@
-import express, { json } from "express";
+import express from "express";
 import ws from "ws";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import https from 'https'
-import fs from 'fs'
 dotenv.config();
 
 type UserData = {
@@ -122,4 +120,4 @@ function update_all_current() {
     }
 }
 
-app.listen(6969)
+app.listen(port);
