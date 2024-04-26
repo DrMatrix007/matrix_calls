@@ -120,4 +120,3 @@ function update_all_current() {
     }
 }
 
-app.listen(port);
