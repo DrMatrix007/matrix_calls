@@ -124,6 +124,7 @@
         peerConnection.restartIce();
         const media = await navigator.mediaDevices.getUserMedia({
             video: true,
+            audio: true,
         });
         if (media) {
             media_write.set(media);
