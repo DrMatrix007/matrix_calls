@@ -21,7 +21,7 @@
   <div style="flex-grow: 1;"></div>
   {#if user}
     <div class="profile">
-      <p>logged in as {user.name}{!user.email ? ", as anonymous" : ""}</p>
+      <p>logged in as {user.name || user.email}{!user.email ? ", as anonymous" : ""}</p>
       {#if user.email}
         <button on:click={() => signOut()}>logout</button>
       {/if}
@@ -30,6 +30,7 @@
   {#if !user?.email}
     <button on:click={() => signIn("github")}> login with github</button>
     <button on:click={() => signIn("spotify")}> login with spotify </button>
+    <button on:click={() => signIn("credentials")}> login with email and password</button>
   {/if}
 </div>
 

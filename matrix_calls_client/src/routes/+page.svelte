@@ -3,10 +3,13 @@
     import { onMount } from "svelte";
     import { writable } from "svelte/store";
     import type { LayoutServerData } from "./$types";
+    import { invalidateAll } from "$app/navigation";
 
     let peerConnection: RTCPeerConnection;
 
-    onMount(() => {});
+    onMount(() => {
+        invalidateAll();
+    });
 
     function setup_peer_connection() {
         peerConnection = new RTCPeerConnection({
