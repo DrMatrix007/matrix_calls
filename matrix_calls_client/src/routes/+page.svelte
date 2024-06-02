@@ -61,6 +61,7 @@
     onMount(() => {
         if (data.jwt) {
             let sock = new ServerSocket(data.jwt);
+            console.log("connected to server")
             socket_write.set(sock);
             return sock.subscribe((message) => {
                 console.log(message);

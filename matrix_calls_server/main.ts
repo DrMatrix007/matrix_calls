@@ -1,5 +1,6 @@
 import express from "express";
 import ws from "ws";
+import https from 'http'
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
@@ -142,9 +143,10 @@ class WebSocketServer {
 }
 
 // Set up the Express server
+// const app = express();
 const port = process.env.PORT || 3000;
-const app = express();
-const httpsServer = app.listen(port);
+// const httpsServer = app.listen(port);
+const httpsServer= new https.Server({}).listen(port);
 console.log("listening on ", port);
 
 // Create a new instance of the WebSocketServer
